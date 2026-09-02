@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type ProdutoDTO from "../../../dto/ProdutoDTO";
 import ProdutoRequests from "../../../fetch/ProdutoRequests";
 
 function ListagemProdutos() {
 
     const [produtos, setProdutos] = useState<ProdutoDTO[]>([]);
+
+    const navigate = useNavigate();
 
     const buscarProdutos = async () => {
 
@@ -19,6 +22,10 @@ function ListagemProdutos() {
     useEffect(() => {
         buscarProdutos();
     }, []);
+
+    const editarProduto = (idProduto: number) => {
+        navigate(`/editar-produto/${idProduto}`);
+    };
 
     return (
         <section>
@@ -37,6 +44,7 @@ function ListagemProdutos() {
                         <th>Estoque</th>
                         <th>Estoque mínimo</th>
                         <th>Ativo</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
 
@@ -63,9 +71,7 @@ function ListagemProdutos() {
                             </td>
 
                             <td>
-                                <td>
-                                    R$ {Number(produto.precoUnitario).toFixed(2)}
-                                </td>
+                                R$ {Number(produto.precoUnitario).toFixed(2)}
                             </td>
 
                             <td>
@@ -78,6 +84,17 @@ function ListagemProdutos() {
 
                             <td>
                                 {produto.ativo ? "Ativo" : "Inativo"}
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        editarProduto(produto.idProduto!)
+                                    }
+                                >
+                                    Editar
+                                </button>
                             </td>
 
                         </tr>

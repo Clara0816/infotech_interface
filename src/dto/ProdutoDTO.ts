@@ -1,7 +1,7 @@
- export default interface ProdutoDTO {
+export default interface ProdutoDTO {
     idProduto?: number,
     idCategoria: number,
-    codigo: number,
+    codigo: string,
     nome: string,
     descricao: string,
     precoUnitario: number,
@@ -9,4 +9,4 @@
     quantidadeMinima: number,
     ativo: boolean,
     dataCadastro: Date;
- }    
+}

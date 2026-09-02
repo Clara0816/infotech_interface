@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import type ProdutoDTO from "../../../dto/ProdutoDTO";
 import ProdutoRequests from "../../../fetch/ProdutoRequests";
 
-function FormProduto() {
+function FormEditarProduto() {
+
+    const { idProduto } = useParams();
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState<ProdutoDTO>({
+        idProduto: 0,
         idCategoria: 0,
         codigo: "",
         nome: "",
@@ -15,6 +20,43 @@ function FormProduto() {
         ativo: true,
         dataCadastro: new Date()
     });
+
+    const [carregando, setCarregando] = useState(true);
+
+    useEffect(() => {
+
+        const buscarProduto = async () => {
+
+            if (!idProduto) {
+                alert("Produto não encontrado.");
+                navigate("/produtos");
+                return;
+            }
+
+            const produto =
+                await ProdutoRequests.procurarProdutoPorId(
+                    Number(idProduto)
+                );
+
+            if (!produto) {
+                alert("Produto não encontrado.");
+                navigate("/produtos");
+                return;
+            }
+
+            setFormData({
+                ...produto,
+                idProduto: Number(produto.idProduto),
+                codigo: String(produto.codigo),
+                dataCadastro: new Date(produto.dataCadastro)
+            });
+
+            setCarregando(false);
+        };
+
+        buscarProduto();
+
+    }, [idProduto, navigate]);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -82,40 +124,39 @@ function FormProduto() {
             return;
         }
 
-        const produtoParaCadastro: ProdutoDTO = {
+        if (!formData.idProduto) {
+            alert("ID do produto inválido.");
+            return;
+        }
+
+        const produtoAtualizado: ProdutoDTO = {
             ...formData,
             codigo: formData.codigo.trim(),
             nome: formData.nome.trim(),
-            descricao: formData.descricao.trim(),
-            dataCadastro: new Date()
+            descricao: formData.descricao.trim()
         };
 
-        const cadastroRealizado =
-            await ProdutoRequests.cadastrarProduto(
-                produtoParaCadastro
+        const atualizacaoRealizada =
+            await ProdutoRequests.atualizarProduto(
+                formData.idProduto,
+                produtoAtualizado
             );
 
-        if (cadastroRealizado) {
+        if (atualizacaoRealizada) {
 
-            alert("Produto cadastrado com sucesso!");
+            alert("Produto atualizado com sucesso!");
 
-            setFormData({
-                idCategoria: 0,
-                codigo: "",
-                nome: "",
-                descricao: "",
-                precoUnitario: 0,
-                quantidadeDisponivel: 0,
-                quantidadeMinima: 0,
-                ativo: true,
-                dataCadastro: new Date()
-            });
+            navigate("/produtos");
 
         } else {
 
-            alert("Não foi possível cadastrar o produto.");
+            alert("Não foi possível atualizar o produto.");
         }
     };
+
+    if (carregando) {
+        return <p>Carregando produto...</p>;
+    }
 
     return (
         <form onSubmit={handleSubmit}>
@@ -233,11 +274,18 @@ function FormProduto() {
             </div>
 
             <button type="submit">
-                Cadastrar produto
+                Salvar alterações
+            </button>
+
+            <button
+                type="button"
+                onClick={() => navigate("/produtos")}
+            >
+                Cancelar
             </button>
 
         </form>
     );
 }
 
-export default FormProduto;
+export default FormEditarProduto;

@@ -1,21 +1,22 @@
-import type ProdutoDTO from "../dto/ProdutoDTO";
+import type MovimentacaoDTO from "../dto/MovimentacaoDTO";
 
 const API_URL = import.meta.env.VITE_API_SERVER_URL;
 
-class ProdutoRequests {
+class MovimentacaoRequests {
 
     private serverURL: string;
-    private endpointProduto: string;
+    private endpointMovimentacao: string;
 
     constructor() {
         this.serverURL = API_URL;
-        this.endpointProduto = "/api/produto";
+        this.endpointMovimentacao = "/api/movimentacao";
     }
 
-    async obterListaDeProdutos(): Promise<ProdutoDTO[] | undefined> {
+    async obterListaDeMovimentacoes(): Promise<MovimentacaoDTO[] | undefined> {
         try {
+
             const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointProduto}`,
+                `${this.serverURL}${this.endpointMovimentacao}`,
                 {
                     method: "GET",
                     headers: {
@@ -26,30 +27,32 @@ class ProdutoRequests {
 
             if (!respostaAPI.ok) {
                 throw new Error(
-                    "Não foi possível listar os produtos."
+                    "Não foi possível listar as movimentações."
                 );
             }
 
-            const listaDeProdutos: ProdutoDTO[] =
+            const listaDeMovimentacoes: MovimentacaoDTO[] =
                 await respostaAPI.json();
 
-            return listaDeProdutos;
+            return listaDeMovimentacoes;
 
         } catch (error) {
+
             console.error(
-                `Erro ao buscar os produtos: ${error}`
+                `Erro ao buscar as movimentações: ${error}`
             );
 
             return undefined;
         }
     }
 
-    async procurarProdutoPorId(
-        idProduto: number
-    ): Promise<ProdutoDTO | undefined> {
+    async procurarMovimentacaoPorId(
+        idMovimentacao: number
+    ): Promise<MovimentacaoDTO | undefined> {
         try {
+
             const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointProduto}/${idProduto}`,
+                `${this.serverURL}${this.endpointMovimentacao}/${idMovimentacao}`,
                 {
                     method: "GET",
                     headers: {
@@ -60,44 +63,47 @@ class ProdutoRequests {
 
             if (!respostaAPI.ok) {
                 throw new Error(
-                    "Não foi possível encontrar o produto."
+                    "Não foi possível encontrar a movimentação."
                 );
             }
 
-            const produto: ProdutoDTO =
+            const movimentacao: MovimentacaoDTO =
                 await respostaAPI.json();
 
-            return produto;
+            return movimentacao;
 
         } catch (error) {
+
             console.error(
-                `Erro ao buscar o produto: ${error}`
+                `Erro ao buscar a movimentação: ${error}`
             );
 
             return undefined;
         }
     }
 
-    async cadastrarProduto(
-        produto: ProdutoDTO
+    async cadastrarMovimentacao(
+        movimentacao: MovimentacaoDTO
     ): Promise<boolean> {
         try {
+
             const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointProduto}`,
+                `${this.serverURL}${this.endpointMovimentacao}`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify(produto)
+                    body: JSON.stringify(movimentacao)
                 }
             );
 
             if (!respostaAPI.ok) {
+
                 const erro = await respostaAPI.json();
 
                 console.error(
-                    `Erro ao cadastrar produto: ${erro.mensagem}`
+                    `Erro ao cadastrar movimentação: ${erro.mensagem}`
                 );
 
                 return false;
@@ -106,35 +112,38 @@ class ProdutoRequests {
             return true;
 
         } catch (error) {
+
             console.error(
-                `Erro ao cadastrar o produto: ${error}`
+                `Erro ao cadastrar a movimentação: ${error}`
             );
 
             return false;
         }
     }
 
-    async atualizarProduto(
-        idProduto: number,
-        produto: ProdutoDTO
+    async atualizarMovimentacao(
+        idMovimentacao: number,
+        movimentacao: MovimentacaoDTO
     ): Promise<boolean> {
         try {
+
             const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointProduto}/${idProduto}`,
+                `${this.serverURL}${this.endpointMovimentacao}/${idMovimentacao}`,
                 {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify(produto)
+                    body: JSON.stringify(movimentacao)
                 }
             );
 
             if (!respostaAPI.ok) {
+
                 const erro = await respostaAPI.json();
 
                 console.error(
-                    `Erro ao atualizar produto: ${erro.mensagem}`
+                    `Erro ao atualizar movimentação: ${erro.mensagem}`
                 );
 
                 return false;
@@ -143,8 +152,9 @@ class ProdutoRequests {
             return true;
 
         } catch (error) {
+
             console.error(
-                `Erro ao atualizar o produto: ${error}`
+                `Erro ao atualizar a movimentação: ${error}`
             );
 
             return false;
@@ -152,4 +162,4 @@ class ProdutoRequests {
     }
 }
 
-export default new ProdutoRequests();
+export default new MovimentacaoRequests();

@@ -1,38 +1,56 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import MovimentacaoRequests from "../../../fetch/MovimentacaoRequests";
 import type MovimentacaoDTO from "../../../dto/MovimentacaoDTO";
+import MovimentacaoRequests from "../../../fetch/MovimentacaoRequests";
+import FormMovimentacao from "../../Formularios/FormMovimentacao/FormMovimentacao";
 
 function ListagemMovimentacoes() {
+    const [movimentacoes, setMovimentacoes] =
+        useState<MovimentacaoDTO[]>([]);
 
-    const [movimentacoes, setMovimentacoes] = useState<MovimentacaoDTO[]>([]);
-    const navigate = useNavigate();
+    const [movimentacaoSelecionada, setMovimentacaoSelecionada] =
+        useState<MovimentacaoDTO | null>(null);
 
-    useEffect(() => {
-        carregarMovimentacoes();
-    }, []);
+    const buscarMovimentacoes = async () => {
+        const listaMovimentacoes =
+            await MovimentacaoRequests.obterListaDeMovimentacoes();
 
-    const carregarMovimentacoes = async () => {
-
-        const lista = await MovimentacaoRequests.obterListaDeMovimentacoes();
-
-        if (lista) {
-            setMovimentacoes(lista);
+        if (listaMovimentacoes) {
+            setMovimentacoes(listaMovimentacoes);
         }
     };
 
-    const editarMovimentacao = (idMovimentacao: number) => {
-        navigate(`/editar-movimentacao/${idMovimentacao}`);
+    useEffect(() => {
+        buscarMovimentacoes();
+    }, []);
+
+    const corrigirMovimentacao = (
+        movimentacao: MovimentacaoDTO
+    ) => {
+        setMovimentacaoSelecionada(movimentacao);
     };
 
     return (
         <section>
+            <h1>Movimentações</h1>
 
-            <h1>Lista de Movimentações</h1>
+            <button
+                type="button"
+                onClick={() =>
+                    window.location.href = "/cadastro-movimentacao"
+                }
+            >
+                Cadastrar movimentação
+            </button>
+
+            {movimentacaoSelecionada && (
+                <FormMovimentacao
+                    movimentacaoParaCorrigir={
+                        movimentacaoSelecionada
+                    }
+                />
+            )}
 
             <table>
-
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -40,20 +58,20 @@ function ListagemMovimentacoes() {
                         <th>Tipo</th>
                         <th>Motivo</th>
                         <th>Quantidade</th>
-                        <th>Preço Unitário</th>
-                        <th>Valor Total</th>
-                        <th>Observação</th>
+                        <th>Preço unitário</th>
+                        <th>Valor total</th>
                         <th>Data</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
 
                 <tbody>
-
                     {movimentacoes.map((movimentacao) => (
-
-                        <tr key={movimentacao.idMovimentacao}>
-
+                        <tr
+                            key={
+                                movimentacao.idMovimentacao
+                            }
+                        >
                             <td>
                                 {movimentacao.idMovimentacao}
                             </td>
@@ -75,48 +93,43 @@ function ListagemMovimentacoes() {
                             </td>
 
                             <td>
-                                {movimentacao.precoUnitarioPraticado !== null
-                                    ? `R$ ${Number(movimentacao.precoUnitarioPraticado).toFixed(2)}`
+                                {movimentacao.precoUnitarioPraticado
+                                    ? `R$ ${Number(
+                                        movimentacao.precoUnitarioPraticado
+                                    ).toFixed(2)}`
                                     : "-"}
                             </td>
 
                             <td>
-                                {movimentacao.valorTotal !== null
-                                    ? `R$ ${Number(movimentacao.valorTotal).toFixed(2)}`
+                                {movimentacao.valorTotal
+                                    ? `R$ ${Number(
+                                        movimentacao.valorTotal
+                                    ).toFixed(2)}`
                                     : "-"}
-                            </td>
-
-                            <td>
-                                {movimentacao.observacao}
                             </td>
 
                             <td>
                                 {new Date(
                                     movimentacao.dataMovimentacao
-                                ).toLocaleString("pt-BR")}
+                                ).toLocaleDateString("pt-BR")}
                             </td>
 
                             <td>
                                 <button
                                     type="button"
                                     onClick={() =>
-                                        editarMovimentacao(
-                                            movimentacao.idMovimentacao!
+                                        corrigirMovimentacao(
+                                            movimentacao
                                         )
                                     }
                                 >
-                                    Editar
+                                    Corrigir
                                 </button>
                             </td>
-
                         </tr>
-
                     ))}
-
                 </tbody>
-
             </table>
-
         </section>
     );
 }

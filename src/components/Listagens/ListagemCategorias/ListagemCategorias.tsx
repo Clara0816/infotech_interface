@@ -1,85 +1,86 @@
 import { useEffect, useState } from "react";
 import type CategoriaDTO from "../../../dto/CategoriaDTO";
 import CategoriaRequests from "../../../fetch/CategoriaRequests";
-import { useNavigate } from "react-router-dom";
+import FormCategoria from "../../Formularios/FormCategoria/FormCategoria";
 
 function ListagemCategorias() {
-
     const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);
 
-    const navigate = useNavigate();
+    const [categoriaSelecionada, setCategoriaSelecionada] =
+        useState<CategoriaDTO | null>(null);
 
-    const carregarCategorias = async () => {
-
-        const lista =
+    const buscarCategorias = async () => {
+        const listaCategorias =
             await CategoriaRequests.obterListaDeCategorias();
 
-        if (lista) {
-            setCategorias(lista);
+        if (listaCategorias) {
+            setCategorias(listaCategorias);
         }
     };
 
     useEffect(() => {
-        carregarCategorias();
+        buscarCategorias();
     }, []);
+
+    const editarCategoria = (categoria: CategoriaDTO) => {
+        setCategoriaSelecionada(categoria);
+    };
 
     return (
         <section>
+            <h1>Categorias</h1>
 
-            <h1>Lista de Categorias</h1>
+            <button
+                type="button"
+                onClick={() =>
+                    window.location.href = "/cadastro-categoria"
+                }
+            >
+                Cadastrar categoria
+            </button>
 
-            {categorias.length === 0 ? (
-
-                <p>Nenhuma categoria cadastrada.</p>
-
-            ) : (
-
-                <table>
-
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nome</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        {categorias.map((categoria) => (
-
-                            <tr key={categoria.idCategoria}>
-
-                                <td>
-                                    {categoria.idCategoria}
-                                </td>
-
-                                <td>
-                                    {categoria.nome}
-                                </td>
-
-                                <td>
-                                    <button
-                                        onClick={() =>
-                                            navigate(
-                                                `/editar-categoria/${categoria.idCategoria}`
-                                            )
-                                        }
-                                    >
-                                        Editar
-                                    </button>
-                                </td>
-
-                            </tr>
-
-                        ))}
-
-                    </tbody>
-
-                </table>
-
+            {categoriaSelecionada && (
+                <FormCategoria
+                    categoriaParaEditar={categoriaSelecionada}
+                />
             )}
 
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {categorias.map((categoria) => (
+                        <tr key={categoria.idCategoria}>
+                            <td>
+                                {categoria.idCategoria}
+                            </td>
+
+                            <td>
+                                {categoria.nome}
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        editarCategoria(
+                                            categoria
+                                        )
+                                    }
+                                >
+                                    Atualizar
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </section>
     );
 }

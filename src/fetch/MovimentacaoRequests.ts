@@ -1,84 +1,22 @@
 import type MovimentacaoDTO from "../dto/MovimentacaoDTO";
 
-const API_URL = import.meta.env.VITE_API_SERVER_URL;
+const url = "http://localhost:3333/api/movimentacao";
 
 class MovimentacaoRequests {
 
-    private serverURL: string;
-    private endpointMovimentacao: string;
-
-    constructor() {
-        this.serverURL = API_URL;
-        this.endpointMovimentacao = "/api/movimentacao";
-    }
-
-    async obterListaDeMovimentacoes(): Promise<MovimentacaoDTO[] | undefined> {
+    async obterListaDeMovimentacoes(): Promise<MovimentacaoDTO[] | null> {
         try {
+            const resposta = await fetch(url);
 
-            const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointMovimentacao}`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                }
-            );
-
-            if (!respostaAPI.ok) {
-                throw new Error(
-                    "Não foi possível listar as movimentações."
-                );
+            if (!resposta.ok) {
+                throw new Error("Erro ao buscar movimentações");
             }
 
-            const listaDeMovimentacoes: MovimentacaoDTO[] =
-                await respostaAPI.json();
+            return await resposta.json();
 
-            return listaDeMovimentacoes;
-
-        } catch (error) {
-
-            console.error(
-                `Erro ao buscar as movimentações: ${error}`
-            );
-
-            return undefined;
-        }
-    }
-
-    async procurarMovimentacaoPorId(
-        idMovimentacao: number
-    ): Promise<MovimentacaoDTO | undefined> {
-        try {
-
-            const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointMovimentacao}/${idMovimentacao}`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                }
-            );
-
-            if (!respostaAPI.ok) {
-                throw new Error(
-                    "Não foi possível encontrar a movimentação."
-                );
-            }
-
-            const movimentacao: MovimentacaoDTO =
-                await respostaAPI.json();
-
-            return movimentacao;
-
-        } catch (error) {
-
-            console.error(
-                `Erro ao buscar a movimentação: ${error}`
-            );
-
-            return undefined;
+        } catch (erro) {
+            console.error(erro);
+            return null;
         }
     }
 
@@ -86,49 +24,31 @@ class MovimentacaoRequests {
         movimentacao: MovimentacaoDTO
     ): Promise<boolean> {
         try {
+            const resposta = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(movimentacao)
+            });
 
-            const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointMovimentacao}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(movimentacao)
-                }
-            );
+            return resposta.ok;
 
-            if (!respostaAPI.ok) {
-
-                const erro = await respostaAPI.json();
-
-                console.error(
-                    `Erro ao cadastrar movimentação: ${erro.mensagem}`
-                );
-
-                return false;
-            }
-
-            return true;
-
-        } catch (error) {
-
-            console.error(
-                `Erro ao cadastrar a movimentação: ${error}`
-            );
-
+        } catch (erro) {
+            console.error(erro);
             return false;
         }
     }
 
-    async atualizarMovimentacao(
+    async corrigirMovimentacao(
         idMovimentacao: number,
         movimentacao: MovimentacaoDTO
     ): Promise<boolean> {
+
         try {
 
-            const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointMovimentacao}/${idMovimentacao}`,
+            const resposta = await fetch(
+                `${url}/${idMovimentacao}`,
                 {
                     method: "PUT",
                     headers: {
@@ -138,25 +58,11 @@ class MovimentacaoRequests {
                 }
             );
 
-            if (!respostaAPI.ok) {
+            return resposta.ok;
 
-                const erro = await respostaAPI.json();
+        } catch (erro) {
 
-                console.error(
-                    `Erro ao atualizar movimentação: ${erro.mensagem}`
-                );
-
-                return false;
-            }
-
-            return true;
-
-        } catch (error) {
-
-            console.error(
-                `Erro ao atualizar a movimentação: ${error}`
-            );
-
+            console.error(erro);
             return false;
         }
     }

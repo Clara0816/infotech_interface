@@ -2,89 +2,103 @@ import { useState } from "react";
 import type CategoriaDTO from "../../../dto/CategoriaDTO";
 import CategoriaRequests from "../../../fetch/CategoriaRequests";
 
-function FormCategoria() {
+function FormCategoria({
+    categoriaParaEditar
+}: {
+    categoriaParaEditar?: CategoriaDTO
+}) {
 
-    const [formData, setFormData] = useState<CategoriaDTO>({
-        nome: ""
-    });
+    const [nome, setNome] = useState(
+        categoriaParaEditar?.nome ?? ""
+    );
 
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
+    const salvar = async () => {
 
-        const { name, value } = e.target;
-
-        setFormData((categoriaAnterior) => ({
-            ...categoriaAnterior,
-            [name]: value
-        }));
-    };
-
-    const handleSubmit = async (
-        e: React.FormEvent<HTMLFormElement>
-    ) => {
-
-        e.preventDefault();
-
-        if (formData.nome.trim() === "") {
+        // Validação dos dados
+        if (nome.trim() === "") {
             alert("O nome da categoria é obrigatório.");
             return;
         }
 
-        if (formData.nome.trim().length > 80) {
-            alert(
-                "O nome da categoria deve possuir no máximo 80 caracteres."
-            );
+        if (nome.trim().length < 2) {
+            alert("O nome da categoria deve ter pelo menos 2 caracteres.");
             return;
         }
 
-        const categoriaParaCadastro: CategoriaDTO = {
-            nome: formData.nome.trim()
+        if (nome.trim().length > 80) {
+            alert("O nome da categoria deve ter no máximo 80 caracteres.");
+            return;
+        }
+
+        const categoria: CategoriaDTO = {
+            idCategoria: categoriaParaEditar?.idCategoria,
+            nome: nome.trim()
         };
 
-        const cadastroRealizado =
-            await CategoriaRequests.cadastrarCategoria(
-                categoriaParaCadastro
+        let sucesso: boolean;
+
+        if (categoriaParaEditar?.idCategoria) {
+
+            sucesso = await CategoriaRequests.atualizarCategoria(
+                categoriaParaEditar.idCategoria,
+                categoria
             );
-
-        if (cadastroRealizado) {
-
-            alert("Categoria cadastrada com sucesso!");
-
-            setFormData({
-                nome: ""
-            });
 
         } else {
 
-            alert("Não foi possível cadastrar a categoria.");
+            sucesso = await CategoriaRequests.cadastrarCategoria(
+                categoria
+            );
+        }
+
+        if (sucesso) {
+
+            alert(
+                categoriaParaEditar
+                    ? "Categoria atualizada com sucesso!"
+                    : "Categoria cadastrada com sucesso!"
+            );
+
+            setNome("");
+
+        } else {
+
+            alert(
+                categoriaParaEditar
+                    ? "Erro ao atualizar categoria."
+                    : "Erro ao cadastrar categoria."
+            );
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <section>
 
-            <div>
+            <h1>
+                {categoriaParaEditar
+                    ? "Atualizar Categoria"
+                    : "Cadastrar Categoria"}
+            </h1>
 
-                <label htmlFor="nome">
-                    Nome
-                </label>
+            <label>
+                Nome da categoria:
 
                 <input
                     type="text"
-                    id="nome"
-                    name="nome"
-                    value={formData.nome}
-                    onChange={handleChange}
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    placeholder="Digite o nome da categoria"
                 />
 
-            </div>
+            </label>
 
-            <button type="submit">
-                Cadastrar categoria
+            <button onClick={salvar}>
+                {categoriaParaEditar
+                    ? "Atualizar"
+                    : "Cadastrar"}
             </button>
 
-        </form>
+        </section>
     );
 }
 

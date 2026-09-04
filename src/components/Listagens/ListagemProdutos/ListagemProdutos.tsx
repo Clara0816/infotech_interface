@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import type ProdutoDTO from "../../../dto/ProdutoDTO";
 import ProdutoRequests from "../../../fetch/ProdutoRequests";
+import FormProduto from "../../Formularios/FormProduto/FormProduto";
 
 function ListagemProdutos() {
-
     const [produtos, setProdutos] = useState<ProdutoDTO[]>([]);
 
-    const navigate = useNavigate();
+    const [produtoSelecionado, setProdutoSelecionado] =
+        useState<ProdutoDTO | null>(null);
 
     const buscarProdutos = async () => {
-
         const listaProdutos =
             await ProdutoRequests.obterListaDeProdutos();
 
@@ -23,17 +22,30 @@ function ListagemProdutos() {
         buscarProdutos();
     }, []);
 
-    const editarProduto = (idProduto: number) => {
-        navigate(`/editar-produto/${idProduto}`);
+    const editarProduto = (produto: ProdutoDTO) => {
+        setProdutoSelecionado(produto);
     };
 
     return (
         <section>
-
             <h1>Produtos</h1>
 
-            <table>
+            <button
+                type="button"
+                onClick={() =>
+                    window.location.href = "/cadastro-produto"
+                }
+            >
+                Cadastrar produto
+            </button>
 
+            {produtoSelecionado && (
+                <FormProduto
+                    produtoParaEditar={produtoSelecionado}
+                />
+            )}
+
+            <table>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -49,29 +61,18 @@ function ListagemProdutos() {
                 </thead>
 
                 <tbody>
-
                     {produtos.map((produto) => (
-
                         <tr key={produto.idProduto}>
+                            <td>{produto.idProduto}</td>
+                            <td>{produto.codigo}</td>
+                            <td>{produto.nome}</td>
+                            <td>{produto.descricao}</td>
 
                             <td>
-                                {produto.idProduto}
-                            </td>
-
-                            <td>
-                                {produto.codigo}
-                            </td>
-
-                            <td>
-                                {produto.nome}
-                            </td>
-
-                            <td>
-                                {produto.descricao}
-                            </td>
-
-                            <td>
-                                R$ {Number(produto.precoUnitario).toFixed(2)}
+                                R${" "}
+                                {Number(
+                                    produto.precoUnitario
+                                ).toFixed(2)}
                             </td>
 
                             <td>
@@ -83,28 +84,25 @@ function ListagemProdutos() {
                             </td>
 
                             <td>
-                                {produto.ativo ? "Ativo" : "Inativo"}
+                                {produto.ativo
+                                    ? "Ativo"
+                                    : "Inativo"}
                             </td>
 
                             <td>
                                 <button
                                     type="button"
                                     onClick={() =>
-                                        editarProduto(produto.idProduto!)
+                                        editarProduto(produto)
                                     }
                                 >
-                                    Editar
+                                    Atualizar
                                 </button>
                             </td>
-
                         </tr>
-
                     ))}
-
                 </tbody>
-
             </table>
-
         </section>
     );
 }

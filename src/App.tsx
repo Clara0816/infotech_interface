@@ -5,20 +5,23 @@ import PInicio from "./pages/PInicio/PInicio";
 
 import PListagemProduto from "./pages/PListagem/PListagemProduto/PListagemProduto";
 import PCadastroProduto from "./pages/PCadastro/PCadastroProduto/PCadastroProduto";
-import PEditarProduto from "./pages/PEditarProduto/PEditarProduto";
 
 import PListagemCategoria from "./pages/PListagem/PListagemCategoria/PListagemCategoria";
 import PCadastroCategoria from "./pages/PCadastro/PCadastroCategoria/PCadastroCategoria";
-import PEditarCategoria from "./pages/PEditarCategoria/PEditarCategoria";
 
 import PListagemMovimentacao from "./pages/PListagem/PListagemMovimentacao/PListagemMovimentacao";
 import PCadastroMovimentacao from "./pages/PCadastro/PCadastroMovimentacao/PCadastroMovimentacao";
-import PEditarMovimentacao from "./pages/PEditarMovimentacao/PEditarMovimentacao";
+
+import PLogin from "./pages/PLogin/PLogin";
+import PCadastroUsuario from "./pages/PCadastro/PCadastroUsuario/PCadastroUsuario";
+
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+
+import PPerfil from "./pages/PPerfil/PPerfil";
 
 import Navegacao from "./components/Navegacao/Navegacao";
 
 function App() {
-
     return (
         <BrowserRouter>
 
@@ -31,55 +34,77 @@ function App() {
                     element={<PInicio />}
                 />
 
-                {/* PRODUTO */}
+                <Route
+                    path="/login"
+                    element={<PLogin />}
+                />
+
+                <Route
+                    path="/cadastro-usuario"
+                    element={<PCadastroUsuario />}
+                />
+
+                <Route
+                    path="/perfil"
+                    element={
+                        <ProtectedRoute>
+                            <PPerfil />
+                        </ProtectedRoute>
+                    }
+                />
 
                 <Route
                     path="/produtos"
-                    element={<PListagemProduto />}
+                    element={
+                        <ProtectedRoute>
+                            <PListagemProduto />
+                        </ProtectedRoute>
+                    }
                 />
 
                 <Route
                     path="/cadastro-produto"
-                    element={<PCadastroProduto />}
+                    element={
+                        <ProtectedRoute>
+                            <PCadastroProduto />
+                        </ProtectedRoute>
+                    }
                 />
-
-                <Route
-                    path="/editar-produto/:idProduto"
-                    element={<PEditarProduto />}
-                />
-
-                {/* CATEGORIA */}
 
                 <Route
                     path="/categorias"
-                    element={<PListagemCategoria />}
+                    element={
+                        <ProtectedRoute>
+                            <PListagemCategoria />
+                        </ProtectedRoute>
+                    }
                 />
 
                 <Route
                     path="/cadastro-categoria"
-                    element={<PCadastroCategoria />}
+                    element={
+                        <ProtectedRoute>
+                            <PCadastroCategoria />
+                        </ProtectedRoute>
+                    }
                 />
-
-                <Route
-                    path="/editar-categoria/:idCategoria"
-                    element={<PEditarCategoria />}
-                />
-
-                {/* MOVIMENTAÇÃO */}
 
                 <Route
                     path="/movimentacoes"
-                    element={<PListagemMovimentacao />}
+                    element={
+                        <ProtectedRoute>
+                            <PListagemMovimentacao />
+                        </ProtectedRoute>
+                    }
                 />
 
                 <Route
                     path="/cadastro-movimentacao"
-                    element={<PCadastroMovimentacao />}
-                />
-
-                <Route
-                    path="/editar-movimentacao/:idMovimentacao"
-                    element={<PEditarMovimentacao />}
+                    element={
+                        <ProtectedRoute>
+                            <PCadastroMovimentacao />
+                        </ProtectedRoute>
+                    }
                 />
 
             </Routes>

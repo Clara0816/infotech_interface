@@ -3,8 +3,6 @@ import FormMovimentacao from "../../../components/Formularios/FormMovimentacao/F
 function PCadastroMovimentacao() {
     return (
         <main>
-            <h1>Cadastro de Movimentação</h1>
-
             <FormMovimentacao />
         </main>
     );

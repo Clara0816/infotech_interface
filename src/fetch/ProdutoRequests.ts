@@ -13,7 +13,9 @@ class ProdutoRequests {
     }
 
     async obterListaDeProdutos(): Promise<ProdutoDTO[] | undefined> {
+
         try {
+
             const respostaAPI = await fetch(
                 `${this.serverURL}${this.endpointProduto}`,
                 {
@@ -36,6 +38,7 @@ class ProdutoRequests {
             return listaDeProdutos;
 
         } catch (error) {
+
             console.error(
                 `Erro ao buscar os produtos: ${error}`
             );
@@ -47,7 +50,9 @@ class ProdutoRequests {
     async procurarProdutoPorId(
         idProduto: number
     ): Promise<ProdutoDTO | undefined> {
+
         try {
+
             const respostaAPI = await fetch(
                 `${this.serverURL}${this.endpointProduto}/${idProduto}`,
                 {
@@ -70,6 +75,7 @@ class ProdutoRequests {
             return produto;
 
         } catch (error) {
+
             console.error(
                 `Erro ao buscar o produto: ${error}`
             );
@@ -81,7 +87,9 @@ class ProdutoRequests {
     async cadastrarProduto(
         produto: ProdutoDTO
     ): Promise<boolean> {
+
         try {
+
             const respostaAPI = await fetch(
                 `${this.serverURL}${this.endpointProduto}`,
                 {
@@ -94,6 +102,7 @@ class ProdutoRequests {
             );
 
             if (!respostaAPI.ok) {
+
                 const erro = await respostaAPI.json();
 
                 console.error(
@@ -106,6 +115,7 @@ class ProdutoRequests {
             return true;
 
         } catch (error) {
+
             console.error(
                 `Erro ao cadastrar o produto: ${error}`
             );
@@ -118,7 +128,9 @@ class ProdutoRequests {
         idProduto: number,
         produto: ProdutoDTO
     ): Promise<boolean> {
+
         try {
+
             const respostaAPI = await fetch(
                 `${this.serverURL}${this.endpointProduto}/${idProduto}`,
                 {
@@ -131,18 +143,19 @@ class ProdutoRequests {
             );
 
             if (!respostaAPI.ok) {
-                const erro = await respostaAPI.json();
+
+                const erro = await respostaAPI.text();
 
                 console.error(
-                    `Erro ao atualizar produto: ${erro.mensagem}`
+                    `Erro ao atualizar produto: ${erro}`
                 );
 
                 return false;
             }
-
             return true;
 
         } catch (error) {
+
             console.error(
                 `Erro ao atualizar o produto: ${error}`
             );

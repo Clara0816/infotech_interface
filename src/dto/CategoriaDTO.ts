@@ -1,4 +1,4 @@
 export default interface CategoriaDTO {
-    idCategoria?: number,
+    idCategoria?: number;
     nome: string;
 }

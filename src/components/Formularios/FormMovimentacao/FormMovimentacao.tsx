@@ -1,227 +1,199 @@
 import { useState } from "react";
-import MovimentacaoRequests from "../../../fetch/MovimentacaoRequests";
 import type MovimentacaoDTO from "../../../dto/MovimentacaoDTO";
+import MovimentacaoRequests from "../../../fetch/MovimentacaoRequests";
+import "./FormMovimentacao.css";
 
-function FormMovimentacao() {
+function FormMovimentacao({
+    movimentacaoParaCorrigir
+}: {
+    movimentacaoParaCorrigir?: MovimentacaoDTO
+}) {
 
-    const [movimentacao, setMovimentacao] = useState<MovimentacaoDTO>({
-        idProduto: 0,
-        idMovimentacaoOrigem: null,
-        tipo: "ENTRADA",
-        motivo: "RECEBIMENTO",
-        quantidade: 0,
-        precoUnitarioPraticado: null,
-        valorTotal: null,
-        observacao: "",
-        dataMovimentacao: new Date()
-    });
+    const [idProduto, setIdProduto] = useState(
+        movimentacaoParaCorrigir
+            ? String(movimentacaoParaCorrigir.idProduto)
+            : ""
+    );
 
-    const handleChange = (
-        evento: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-    ) => {
+    const [tipo, setTipo] = useState(
+        movimentacaoParaCorrigir?.tipo ?? ""
+    );
 
-        const { name, value } = evento.target;
+    const [motivo, setMotivo] = useState(
+        movimentacaoParaCorrigir
+            ? "CORRECAO"
+            : ""
+    );
 
-        if (name === "idProduto" || name === "quantidade") {
-            setMovimentacao({
-                ...movimentacao,
-                [name]: Number(value)
-            });
-            return;
-        }
+    const [quantidade, setQuantidade] = useState(
+        movimentacaoParaCorrigir
+            ? String(movimentacaoParaCorrigir.quantidade)
+            : ""
+    );
 
-        if (name === "idMovimentacaoOrigem") {
-            setMovimentacao({
-                ...movimentacao,
-                idMovimentacaoOrigem: value === "" ? null : Number(value)
-            });
-            return;
-        }
+    const [precoUnitarioPraticado, setPrecoUnitarioPraticado] =
+        useState("");
 
-        if (name === "precoUnitarioPraticado") {
-            setMovimentacao({
-                ...movimentacao,
-                precoUnitarioPraticado: value === "" ? null : Number(value)
-            });
-            return;
-        }
+    const [valorTotal, setValorTotal] = useState("");
 
-        if (name === "valorTotal") {
-            setMovimentacao({
-                ...movimentacao,
-                valorTotal: value === "" ? null : Number(value)
-            });
-            return;
-        }
+    const [observacao, setObservacao] = useState("");
 
-        setMovimentacao({
-            ...movimentacao,
-            [name]: value
-        });
-    };
+    const [idMovimentacaoOrigem, setIdMovimentacaoOrigem] =
+        useState(
+            movimentacaoParaCorrigir
+                ? String(movimentacaoParaCorrigir.idMovimentacao)
+                : ""
+        );
 
-    const cadastrar = async (evento: React.FormEvent) => {
+    const salvar = async () => {
 
-        evento.preventDefault();
-
-        // Validação do produto
-        if (!movimentacao.idProduto || movimentacao.idProduto <= 0) {
+        if (!idProduto || Number(idProduto) <= 0) {
             alert("Informe um produto válido.");
             return;
         }
 
-        // Validação do tipo
         if (
-            movimentacao.tipo !== "ENTRADA" &&
-            movimentacao.tipo !== "SAIDA"
+            !quantidade ||
+            Number(quantidade) <= 0
         ) {
-            alert("O tipo deve ser ENTRADA ou SAIDA.");
-            return;
-        }
-
-        // Validação do motivo
-        const motivosValidos = [
-            "RECEBIMENTO",
-            "VENDA",
-            "USO_INTERNO",
-            "PERDA",
-            "DANIFICADO",
-            "CORRECAO"
-        ];
-
-        if (!motivosValidos.includes(movimentacao.motivo)) {
-            alert("Informe um motivo válido.");
-            return;
-        }
-
-        // Validação da quantidade
-        if (!movimentacao.quantidade || movimentacao.quantidade <= 0) {
             alert("A quantidade deve ser maior que zero.");
             return;
         }
 
-        // RECEBIMENTO precisa ser ENTRADA
-        if (
-            movimentacao.motivo === "RECEBIMENTO" &&
-            movimentacao.tipo !== "ENTRADA"
-        ) {
-            alert("O motivo RECEBIMENTO deve possuir o tipo ENTRADA.");
-            return;
-        }
-
-        // VENDA precisa ser SAIDA
-        if (
-            movimentacao.motivo === "VENDA" &&
-            movimentacao.tipo !== "SAIDA"
-        ) {
-            alert("O motivo VENDA deve possuir o tipo SAIDA.");
-            return;
-        }
-
-        // CORRECAO precisa de movimentação de origem
-        if (
-            movimentacao.motivo === "CORRECAO" &&
-            (!movimentacao.idMovimentacaoOrigem ||
-                movimentacao.idMovimentacaoOrigem <= 0)
-        ) {
-            alert("Informe a movimentação de origem para uma correção.");
-            return;
-        }
-
-        // Outros motivos não podem possuir movimentação de origem
-        if (
-            movimentacao.motivo !== "CORRECAO" &&
-            movimentacao.idMovimentacaoOrigem !== null
-        ) {
-            alert("A movimentação de origem só deve ser informada para CORRECAO.");
-            return;
-        }
-
-        // VENDA precisa de preço e valor total
-        if (movimentacao.motivo === "VENDA") {
-
-            if (
-                movimentacao.precoUnitarioPraticado === null ||
-                movimentacao.precoUnitarioPraticado < 0
-            ) {
-                alert("Informe um preço unitário válido para a venda.");
-                return;
-            }
-
-            if (
-                movimentacao.valorTotal === null ||
-                movimentacao.valorTotal < 0
-            ) {
-                alert("Informe um valor total válido para a venda.");
-                return;
-            }
-
-            const valorCalculado =
-                movimentacao.quantidade *
-                movimentacao.precoUnitarioPraticado;
-
-            if (Math.abs(valorCalculado - movimentacao.valorTotal) > 0.01) {
-                alert(
-                    `O valor total deve ser igual à quantidade multiplicada pelo preço unitário. Valor correto: R$ ${valorCalculado.toFixed(2)}`
-                );
-                return;
-            }
-
-        } else {
-
-            // Outros motivos não possuem preço nem valor total
-            if (
-                movimentacao.precoUnitarioPraticado !== null ||
-                movimentacao.valorTotal !== null
-            ) {
-                alert(
-                    "Preço unitário e valor total só devem ser informados para VENDA."
-                );
-                return;
-            }
-        }
-
-        // Validação da observação
-        if (
-            typeof movimentacao.observacao !== "string" ||
-            movimentacao.observacao.trim() === ""
-        ) {
+        if (observacao.trim() === "") {
             alert("A observação é obrigatória.");
             return;
         }
 
-        // Cria o objeto que será enviado para a API
-        const dadosMovimentacao: MovimentacaoDTO = {
-            idProduto: movimentacao.idProduto,
-            idMovimentacaoOrigem: movimentacao.idMovimentacaoOrigem,
-            tipo: movimentacao.tipo,
-            motivo: movimentacao.motivo,
-            quantidade: movimentacao.quantidade,
-            precoUnitarioPraticado: movimentacao.precoUnitarioPraticado,
-            valorTotal: movimentacao.valorTotal,
-            observacao: movimentacao.observacao.trim(),
-            dataMovimentacao: new Date()
+        // CORREÇÃO
+        if (movimentacaoParaCorrigir?.idMovimentacao) {
+
+            const movimentacao: MovimentacaoDTO = {
+                idProduto: Number(idProduto),
+                idMovimentacaoOrigem:
+                    movimentacaoParaCorrigir.idMovimentacao,
+                tipo,
+                motivo: "CORRECAO",
+                quantidade: Number(quantidade),
+                observacao: observacao.trim(),
+                dataMovimentacao: new Date()
+            };
+
+            const sucesso =
+                await MovimentacaoRequests.corrigirMovimentacao(
+                    movimentacaoParaCorrigir.idMovimentacao,
+                    movimentacao
+                );
+
+            if (sucesso) {
+                alert(
+                    "Correção da movimentação registrada com sucesso!"
+                );
+
+                setQuantidade("");
+                setObservacao("");
+
+            } else {
+                alert(
+                    "Erro ao registrar a correção da movimentação."
+                );
+            }
+
+            return;
+        }
+
+        // CADASTRO NORMAL
+
+        if (tipo !== "ENTRADA" && tipo !== "SAIDA") {
+            alert("O tipo deve ser ENTRADA ou SAIDA.");
+            return;
+        }
+
+        if (!motivo) {
+            alert("Informe o motivo da movimentação.");
+            return;
+        }
+
+        if (
+            motivo === "RECEBIMENTO" &&
+            tipo !== "ENTRADA"
+        ) {
+            alert(
+                "RECEBIMENTO deve ser uma movimentação de ENTRADA."
+            );
+            return;
+        }
+
+        if (
+            motivo === "VENDA" &&
+            tipo !== "SAIDA"
+        ) {
+            alert(
+                "VENDA deve ser uma movimentação de SAIDA."
+            );
+            return;
+        }
+
+        if (
+            motivo === "VENDA" &&
+            (
+                !precoUnitarioPraticado ||
+                !valorTotal
+            )
+        ) {
+            alert(
+                "Informe o preço unitário e o valor total para uma VENDA."
+            );
+            return;
+        }
+
+        const movimentacao: MovimentacaoDTO = {
+            idProduto: Number(idProduto),
+            tipo,
+            motivo,
+            quantidade: Number(quantidade),
+            dataMovimentacao: new Date(),
+            observacao: observacao.trim()
         };
 
-        const resposta = await MovimentacaoRequests.cadastrarMovimentacao(
-            dadosMovimentacao
-        );
+        if (motivo === "CORRECAO") {
+            if (!idMovimentacaoOrigem) {
+                alert(
+                    "Informe a movimentação de origem para uma CORRECAO."
+                );
+                return;
+            }
 
-        if (resposta) {
+            movimentacao.idMovimentacaoOrigem =
+                Number(idMovimentacaoOrigem);
+        }
 
+        if (precoUnitarioPraticado) {
+            movimentacao.precoUnitarioPraticado =
+                Number(precoUnitarioPraticado);
+        }
+
+        if (valorTotal) {
+            movimentacao.valorTotal =
+                Number(valorTotal);
+        }
+
+        const sucesso =
+            await MovimentacaoRequests.cadastrarMovimentacao(
+                movimentacao
+            );
+
+        if (sucesso) {
             alert("Movimentação cadastrada com sucesso!");
 
-            setMovimentacao({
-                idProduto: 0,
-                idMovimentacaoOrigem: null,
-                tipo: "ENTRADA",
-                motivo: "RECEBIMENTO",
-                quantidade: 0,
-                precoUnitarioPraticado: null,
-                valorTotal: null,
-                observacao: "",
-                dataMovimentacao: new Date()
-            });
+            setIdProduto("");
+            setTipo("");
+            setMotivo("");
+            setQuantidade("");
+            setPrecoUnitarioPraticado("");
+            setValorTotal("");
+            setObservacao("");
+            setIdMovimentacaoOrigem("");
 
         } else {
             alert("Erro ao cadastrar movimentação.");
@@ -229,149 +201,176 @@ function FormMovimentacao() {
     };
 
     return (
-        <form onSubmit={cadastrar}>
+        <section className="form-movimentacao">
 
-            <div>
-                <label htmlFor="idProduto">
-                    ID do Produto:
-                </label>
+            <h1>
+                {movimentacaoParaCorrigir
+                    ? "Corrigir Movimentação"
+                    : "Cadastrar Movimentação"}
+            </h1>
+
+            <div className="campo">
+                <label>ID do produto:</label>
 
                 <input
                     type="number"
-                    id="idProduto"
-                    name="idProduto"
-                    value={movimentacao.idProduto || ""}
-                    onChange={handleChange}
+                    value={idProduto}
+                    onChange={(e) =>
+                        setIdProduto(e.target.value)
+                    }
+                    disabled={!!movimentacaoParaCorrigir}
                 />
             </div>
 
-            <div>
-                <label htmlFor="tipo">
-                    Tipo:
-                </label>
+            <div className="campo">
+                <label>Tipo:</label>
 
                 <select
-                    id="tipo"
-                    name="tipo"
-                    value={movimentacao.tipo}
-                    onChange={handleChange}
+                    value={tipo}
+                    onChange={(e) =>
+                        setTipo(e.target.value)
+                    }
+                    disabled={!!movimentacaoParaCorrigir}
                 >
-                    <option value="ENTRADA">ENTRADA</option>
-                    <option value="SAIDA">SAIDA</option>
+                    <option value="">
+                        Selecione
+                    </option>
+
+                    <option value="ENTRADA">
+                        ENTRADA
+                    </option>
+
+                    <option value="SAIDA">
+                        SAIDA
+                    </option>
                 </select>
             </div>
 
-            <div>
-                <label htmlFor="motivo">
-                    Motivo:
-                </label>
+            <div className="campo">
+                <label>Motivo:</label>
 
                 <select
-                    id="motivo"
-                    name="motivo"
-                    value={movimentacao.motivo}
-                    onChange={handleChange}
+                    value={motivo}
+                    onChange={(e) =>
+                        setMotivo(e.target.value)
+                    }
+                    disabled={!!movimentacaoParaCorrigir}
                 >
-                    <option value="RECEBIMENTO">RECEBIMENTO</option>
-                    <option value="VENDA">VENDA</option>
-                    <option value="USO_INTERNO">USO_INTERNO</option>
-                    <option value="PERDA">PERDA</option>
-                    <option value="DANIFICADO">DANIFICADO</option>
-                    <option value="CORRECAO">CORRECAO</option>
+                    <option value="">
+                        Selecione
+                    </option>
+
+                    <option value="RECEBIMENTO">
+                        RECEBIMENTO
+                    </option>
+
+                    <option value="VENDA">
+                        VENDA
+                    </option>
+
+                    <option value="USO_INTERNO">
+                        USO_INTERNO
+                    </option>
+
+                    <option value="PERDA">
+                        PERDA
+                    </option>
+
+                    <option value="DANIFICADO">
+                        DANIFICADO
+                    </option>
+
+                    <option value="CORRECAO">
+                        CORRECAO
+                    </option>
                 </select>
             </div>
 
-            <div>
-                <label htmlFor="idMovimentacaoOrigem">
-                    ID da Movimentação de Origem:
-                </label>
+            <div className="campo">
+                <label>Quantidade:</label>
 
                 <input
                     type="number"
-                    id="idMovimentacaoOrigem"
-                    name="idMovimentacaoOrigem"
-                    value={movimentacao.idMovimentacaoOrigem || ""}
-                    onChange={handleChange}
-                    placeholder="Somente para CORRECAO"
-                />
-            </div>
-
-            <div>
-                <label htmlFor="quantidade">
-                    Quantidade:
-                </label>
-
-                <input
-                    type="number"
-                    id="quantidade"
-                    name="quantidade"
-                    value={movimentacao.quantidade || ""}
-                    onChange={handleChange}
-                    min="1"
-                />
-            </div>
-
-            <div>
-                <label htmlFor="precoUnitarioPraticado">
-                    Preço Unitário:
-                </label>
-
-                <input
-                    type="number"
-                    id="precoUnitarioPraticado"
-                    name="precoUnitarioPraticado"
-                    value={
-                        movimentacao.precoUnitarioPraticado === null
-                            ? ""
-                            : movimentacao.precoUnitarioPraticado
+                    value={quantidade}
+                    onChange={(e) =>
+                        setQuantidade(e.target.value)
                     }
-                    onChange={handleChange}
-                    step="0.01"
-                    min="0"
-                    placeholder="Somente para VENDA"
                 />
             </div>
 
-            <div>
-                <label htmlFor="valorTotal">
-                    Valor Total:
-                </label>
+            {!movimentacaoParaCorrigir && (
+                <>
+                    <div className="campo">
+                        <label>
+                            Preço unitário:
+                        </label>
+
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={
+                                precoUnitarioPraticado
+                            }
+                            onChange={(e) =>
+                                setPrecoUnitarioPraticado(
+                                    e.target.value
+                                )
+                            }
+                        />
+                    </div>
+
+                    <div className="campo">
+                        <label>
+                            Valor total:
+                        </label>
+
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={valorTotal}
+                            onChange={(e) =>
+                                setValorTotal(
+                                    e.target.value
+                                )
+                            }
+                        />
+                    </div>
+                </>
+            )}
+
+            {movimentacaoParaCorrigir && (
+                <div className="campo">
+                    <label>
+                        ID da movimentação original:
+                    </label>
+
+                    <input
+                        type="number"
+                        value={idMovimentacaoOrigem}
+                        disabled
+                    />
+                </div>
+            )}
+
+            <div className="campo">
+                <label>Observação:</label>
 
                 <input
-                    type="number"
-                    id="valorTotal"
-                    name="valorTotal"
-                    value={
-                        movimentacao.valorTotal === null
-                            ? ""
-                            : movimentacao.valorTotal
+                    type="text"
+                    value={observacao}
+                    onChange={(e) =>
+                        setObservacao(e.target.value)
                     }
-                    onChange={handleChange}
-                    step="0.01"
-                    min="0"
-                    placeholder="Somente para VENDA"
                 />
             </div>
 
-            <div>
-                <label htmlFor="observacao">
-                    Observação:
-                </label>
-
-                <textarea
-                    id="observacao"
-                    name="observacao"
-                    value={movimentacao.observacao}
-                    onChange={handleChange}
-                    placeholder="Digite uma observação"
-                />
-            </div>
-
-            <button type="submit">
-                Cadastrar movimentação
+            <button onClick={salvar}>
+                {movimentacaoParaCorrigir
+                    ? "Registrar correção"
+                    : "Cadastrar"}
             </button>
 
-        </form>
+        </section>
     );
 }
 

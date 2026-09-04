@@ -1,115 +1,39 @@
 import type CategoriaDTO from "../dto/CategoriaDTO";
 
-const API_URL = import.meta.env.VITE_API_SERVER_URL;
+const url = "http://localhost:3333/api/categoria";
 
 class CategoriaRequests {
 
-    private serverURL: string;
-    private endpointCategoria: string;
-
-    constructor() {
-        this.serverURL = API_URL;
-        this.endpointCategoria = "/api/categoria";
-    }
-
-    async obterListaDeCategorias(): Promise<CategoriaDTO[] | undefined> {
+    async obterListaDeCategorias(): Promise<CategoriaDTO[] | null> {
         try {
-            const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointCategoria}`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                }
-            );
+            const resposta = await fetch(url);
 
-            if (!respostaAPI.ok) {
-                throw new Error(
-                    "Não foi possível listar as categorias."
-                );
+            if (!resposta.ok) {
+                throw new Error("Erro ao buscar categorias");
             }
 
-            const listaDeCategorias: CategoriaDTO[] =
-                await respostaAPI.json();
+            return await resposta.json();
 
-            return listaDeCategorias;
-
-        } catch (error) {
-            console.error(
-                `Erro ao buscar as categorias: ${error}`
-            );
-
-            return undefined;
+        } catch (erro) {
+            console.error(erro);
+            return null;
         }
     }
 
-    async procurarCategoriaPorId(
-        idCategoria: number
-    ): Promise<CategoriaDTO | undefined> {
+    async cadastrarCategoria(categoria: CategoriaDTO): Promise<boolean> {
         try {
-            const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointCategoria}/${idCategoria}`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                }
-            );
+            const resposta = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(categoria)
+            });
 
-            if (!respostaAPI.ok) {
-                throw new Error(
-                    "Não foi possível encontrar a categoria."
-                );
-            }
+            return resposta.ok;
 
-            const categoria: CategoriaDTO =
-                await respostaAPI.json();
-
-            return categoria;
-
-        } catch (error) {
-            console.error(
-                `Erro ao buscar a categoria: ${error}`
-            );
-
-            return undefined;
-        }
-    }
-
-    async cadastrarCategoria(
-        categoria: CategoriaDTO
-    ): Promise<boolean> {
-        try {
-            const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointCategoria}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(categoria)
-                }
-            );
-
-            if (!respostaAPI.ok) {
-                const erro = await respostaAPI.json();
-
-                console.error(
-                    `Erro ao cadastrar categoria: ${erro.mensagem}`
-                );
-
-                return false;
-            }
-
-            return true;
-
-        } catch (error) {
-            console.error(
-                `Erro ao cadastrar a categoria: ${error}`
-            );
-
+        } catch (erro) {
+            console.error(erro);
             return false;
         }
     }
@@ -119,8 +43,8 @@ class CategoriaRequests {
         categoria: CategoriaDTO
     ): Promise<boolean> {
         try {
-            const respostaAPI = await fetch(
-                `${this.serverURL}${this.endpointCategoria}/${idCategoria}`,
+            const resposta = await fetch(
+                `${url}/${idCategoria}`,
                 {
                     method: "PUT",
                     headers: {
@@ -130,23 +54,10 @@ class CategoriaRequests {
                 }
             );
 
-            if (!respostaAPI.ok) {
-                const erro = await respostaAPI.json();
+            return resposta.ok;
 
-                console.error(
-                    `Erro ao atualizar categoria: ${erro.mensagem}`
-                );
-
-                return false;
-            }
-
-            return true;
-
-        } catch (error) {
-            console.error(
-                `Erro ao atualizar a categoria: ${error}`
-            );
-
+        } catch (erro) {
+            console.error(erro);
             return false;
         }
     }

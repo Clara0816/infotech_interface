@@ -1,38 +1,58 @@
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import type ProdutoDTO from "../../../dto/ProdutoDTO";
 import ProdutoRequests from "../../../fetch/ProdutoRequests";
 
-function FormProduto() {
+function FormProduto({
+    produtoParaEditar
+}: {
+    produtoParaEditar?: ProdutoDTO
+}) {
 
-    const [formData, setFormData] = useState<ProdutoDTO>({
-        idCategoria: 0,
-        codigo: "",
-        nome: "",
-        descricao: "",
-        precoUnitario: 0,
-        quantidadeDisponivel: 0,
-        quantidadeMinima: 0,
-        ativo: true,
-        dataCadastro: new Date()
-    });
+    const [formData, setFormData] = useState<ProdutoDTO>(
+        produtoParaEditar
+            ? {
+                  ...produtoParaEditar,
+                  idCategoria: Number(produtoParaEditar.idCategoria),
+                  precoUnitario: Number(produtoParaEditar.precoUnitario),
+                  quantidadeDisponivel: Number(
+                      produtoParaEditar.quantidadeDisponivel
+                  ),
+                  quantidadeMinima: Number(
+                      produtoParaEditar.quantidadeMinima
+                  ),
+                  ativo: Boolean(produtoParaEditar.ativo)
+              }
+            : {
+                  idCategoria: 0,
+                  codigo: "",
+                  nome: "",
+                  descricao: "",
+                  precoUnitario: 0,
+                  quantidadeDisponivel: 0,
+                  quantidadeMinima: 0,
+                  ativo: true,
+                  dataCadastro: new Date()
+              }
+    );
 
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+        e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
 
         const { name, value, type } = e.target;
 
         setFormData((produtoAnterior) => ({
             ...produtoAnterior,
+
             [name]:
                 type === "number"
-                    ? Number(value)
+                    ? Number(value.replace(",", "."))
                     : value
         }));
     };
 
     const handleAtivoChange = (
-        e: React.ChangeEvent<HTMLInputElement>
+        e: ChangeEvent<HTMLInputElement>
     ) => {
 
         setFormData((produtoAnterior) => ({
@@ -42,62 +62,113 @@ function FormProduto() {
     };
 
     const handleSubmit = async (
-        e: React.FormEvent<HTMLFormElement>
+        e: FormEvent<HTMLFormElement>
     ) => {
 
         e.preventDefault();
 
-        if (formData.idCategoria <= 0) {
+        // Validação do ID da categoria
+        if (
+            !Number.isFinite(formData.idCategoria) ||
+            formData.idCategoria <= 0
+        ) {
             alert("O ID da categoria deve ser maior que zero.");
             return;
         }
 
-        if (formData.codigo.trim() === "") {
+        // Validação do código
+        if (
+            typeof formData.codigo !== "string" ||
+            formData.codigo.trim() === ""
+        ) {
             alert("O código é obrigatório.");
             return;
         }
 
+        // Validação do nome
         if (formData.nome.trim() === "") {
             alert("O nome é obrigatório.");
             return;
         }
 
+        // Validação da descrição
         if (formData.descricao.trim() === "") {
             alert("A descrição é obrigatória.");
             return;
         }
 
-        if (formData.precoUnitario <= 0) {
+        // Validação do preço
+        if (
+            !Number.isFinite(formData.precoUnitario) ||
+            formData.precoUnitario <= 0
+        ) {
             alert("O preço unitário deve ser maior que zero.");
             return;
         }
 
-        if (formData.quantidadeDisponivel < 0) {
-            alert("A quantidade disponível não pode ser negativa.");
+        // Validação da quantidade disponível
+        if (
+            !Number.isFinite(formData.quantidadeDisponivel) ||
+            formData.quantidadeDisponivel < 0
+        ) {
+            alert(
+                "A quantidade disponível não pode ser negativa."
+            );
             return;
         }
 
-        if (formData.quantidadeMinima < 0) {
-            alert("A quantidade mínima não pode ser negativa.");
+        // Validação da quantidade mínima
+        if (
+            !Number.isFinite(formData.quantidadeMinima) ||
+            formData.quantidadeMinima < 0
+        ) {
+            alert(
+                "A quantidade mínima não pode ser negativa."
+            );
             return;
         }
 
-        const produtoParaCadastro: ProdutoDTO = {
+        const produtoParaEnviar: ProdutoDTO = {
             ...formData,
+            idCategoria: Number(formData.idCategoria),
+            precoUnitario: Number(formData.precoUnitario),
+            quantidadeDisponivel: Number(
+                formData.quantidadeDisponivel
+            ),
+            quantidadeMinima: Number(
+                formData.quantidadeMinima
+            ),
             codigo: formData.codigo.trim(),
             nome: formData.nome.trim(),
             descricao: formData.descricao.trim(),
             dataCadastro: new Date()
         };
 
-        const cadastroRealizado =
-            await ProdutoRequests.cadastrarProduto(
-                produtoParaCadastro
-            );
+        let cadastroRealizado: boolean;
+
+        if (produtoParaEditar?.idProduto) {
+
+            cadastroRealizado =
+                await ProdutoRequests.atualizarProduto(
+                    produtoParaEditar.idProduto,
+                    produtoParaEnviar
+                );
+
+        } else {
+
+            cadastroRealizado =
+                await ProdutoRequests.cadastrarProduto(
+                    produtoParaEnviar
+                );
+        }
 
         if (cadastroRealizado) {
 
-            alert("Produto cadastrado com sucesso!");
+            alert(
+                produtoParaEditar
+                    ? "Produto atualizado com sucesso!"
+                    : "Produto cadastrado com sucesso!"
+            );
 
             setFormData({
                 idCategoria: 0,
@@ -113,7 +184,11 @@ function FormProduto() {
 
         } else {
 
-            alert("Não foi possível cadastrar o produto.");
+            alert(
+                produtoParaEditar
+                    ? "Não foi possível atualizar o produto."
+                    : "Não foi possível cadastrar o produto."
+            );
         }
     };
 
@@ -233,7 +308,9 @@ function FormProduto() {
             </div>
 
             <button type="submit">
-                Cadastrar produto
+                {produtoParaEditar
+                    ? "Atualizar produto"
+                    : "Cadastrar produto"}
             </button>
 
         </form>

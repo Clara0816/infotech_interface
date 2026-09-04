@@ -1,32 +1,52 @@
+import { useState } from "react";
+
 function Navegacao() {
+    const [usuarioLogado, setUsuarioLogado] = useState(
+        localStorage.getItem("usuarioLogado") !== null
+    );
+
+    const deslogar = () => {
+        localStorage.removeItem("usuarioLogado");
+        setUsuarioLogado(false);
+        window.location.href = "/";
+    };
 
     return (
         <nav className="navegacao">
+            <div className="navegacao-links">
+                <a href="/">Início</a>
 
-            <a href="/">Início</a>
+                {usuarioLogado && (
+                    <>
+                        <a href="/produtos">
+                            Produtos
+                        </a>
 
-            <a href="/produtos">Produtos</a>
+                        <a href="/categorias">
+                            Categorias
+                        </a>
 
-            <a href="/cadastro-produto">
-                Cadastrar produto
-            </a>
+                        <a href="/movimentacoes">
+                            Movimentações
+                        </a>
+                    </>
+                )}
+            </div>
 
-            <a href="/categorias">
-                Categorias
-            </a>
+            {usuarioLogado && (
+                <div className="navegacao-usuario">
+                    <a href="/perfil">
+                        Perfil
+                    </a>
 
-            <a href="/cadastro-categoria">
-                Cadastrar categoria
-            </a>
-
-            <a href="/movimentacoes">
-                Movimentações
-            </a>
-
-            <a href="/cadastro-movimentacao">
-                Cadastrar movimentação
-            </a>
-
+                    <button
+                        type="button"
+                        onClick={deslogar}
+                    >
+                        Sair
+                    </button>
+                </div>
+            )}
         </nav>
     );
 }

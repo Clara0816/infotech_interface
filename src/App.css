@@ -74,7 +74,7 @@
   border-top: 1px solid var(--border);
   text-align: left;
 
-  & > div {
+  &>div {
     flex: 1 1 0;
     padding: 32px;
 
@@ -191,4 +191,36 @@
   gap: 30px;
   justify-content: center;
   padding: 20px;
+}
+
+.navegacao {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 50px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.navegacao-links {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.navegacao-usuario {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.navegacao a {
+  text-decoration: none;
+}
+
+.navegacao-usuario button {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
 }
